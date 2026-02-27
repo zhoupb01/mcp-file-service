@@ -1,0 +1,29 @@
+{
+    "name": "mcp-file-adapter",
+    "version": "0.1.2",
+    "description": "Local MCP stdio adapter for remote file service.",
+    "license": "MIT",
+    "type": "module",
+    "main": "dist/index.js",
+    "files": [
+        "dist"
+    ],
+    "bin": {
+        "mcp-file-adapter": "dist/index.js"
+    },
+    "scripts": {
+        "dev": "tsx src/index.ts",
+        "build": "tsc -p tsconfig.json",
+        "prepublishOnly": "npm run build",
+        "start": "node dist/index.js"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.25.3",
+        "zod": "^3.25.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.30",
+        "tsx": "^4.19.0",
+        "typescript": "^5.5.0"
+    }
+}

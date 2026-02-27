@@ -1,0 +1,21 @@
+{
+    "servers": {
+        // "file-svc": {
+        //     "type": "stdio",
+        //     "command": "npx",
+        //     "args": [
+        //         "-y",
+        //         "mcp-file-adapter",
+        //         "--remote-base-url=https://mcp-file.zhoupb.com"
+        //     ]
+        // }
+        "file-mcp": {
+            "type": "stdio",
+            "command": "node",
+            "args": [
+                "./mcp-file-adapter/dist/index.js",
+                "--remote-base-url=https://mcp-file.zhoupb.com"
+            ]
+        }
+    }
+}
