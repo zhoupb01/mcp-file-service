@@ -15,17 +15,11 @@
 
 参数解析使用 `node:util.parseArgs`（严格模式），未知参数会直接报错退出。
 
-## Role 枚举
+## Role 规则
 
-当前允许值：
-
-- `product`
-- `java`
-- `python`
-- `android`
-- `vue`
-
-非法值、空值（`--role=`）或缺值（`--role`）都会报错。
+- `role` 不再是固定枚举，任意非空字符串都可用
+- 但不能与系统保留名冲突：`template`、`archive`
+- 空值（`--role=`）或缺值（`--role`）都会报错
 
 ## 鉴权
 

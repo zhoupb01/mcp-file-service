@@ -1,7 +1,7 @@
 import { parseArgs } from "node:util";
 
-export const SUPPORTED_ROLES = ["product", "java", "python", "android", "vue"] as const;
-export type SupportedRole = (typeof SUPPORTED_ROLES)[number];
+export const RESERVED_SYSTEM_NAMES = ["template", "archive"] as const;
+export type SupportedRole = string;
 
 export type AdapterConfig = {
     remoteBaseUrl: string;
@@ -34,7 +34,11 @@ function parseCliValues(args: string[]): CliValues {
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         if (message.includes("--role")) {
-            throw new Error(`invalid --role: missing value, expected one of ${SUPPORTED_ROLES.join(", ")}`);
+            throw new Error(
+                `invalid --role: missing value, expected non-empty string and must not be system names: ${RESERVED_SYSTEM_NAMES.join(
+                    ", "
+                )}`
+            );
         }
         throw err;
     }
@@ -44,21 +48,33 @@ function parseRole(rawRole: string | boolean | undefined, source: "cli" | "env")
     if (rawRole === undefined) return "";
     if (typeof rawRole !== "string") {
         if (rawRole === true) {
-            throw new Error(`invalid --role: missing value, expected one of ${SUPPORTED_ROLES.join(", ")}`);
+            throw new Error(
+                `invalid --role: missing value, expected non-empty string and must not be system names: ${RESERVED_SYSTEM_NAMES.join(
+                    ", "
+                )}`
+            );
         }
-        throw new Error(`invalid --role: expected string value, expected one of ${SUPPORTED_ROLES.join(", ")}`);
+        throw new Error(
+            `invalid --role: expected string value, expected non-empty string and must not be system names: ${RESERVED_SYSTEM_NAMES.join(
+                ", "
+            )}`
+        );
     }
     const role = rawRole.trim();
     if (!role) {
         if (source === "cli") {
-            throw new Error(`invalid --role: empty value, expected one of ${SUPPORTED_ROLES.join(", ")}`);
+            throw new Error(
+                `invalid --role: empty value, expected non-empty string and must not be system names: ${RESERVED_SYSTEM_NAMES.join(
+                    ", "
+                )}`
+            );
         }
         return "";
     }
-    if ((SUPPORTED_ROLES as readonly string[]).includes(role)) {
-        return role as SupportedRole;
+    if ((RESERVED_SYSTEM_NAMES as readonly string[]).includes(role)) {
+        throw new Error(`invalid role "${role}", role must not be system names: ${RESERVED_SYSTEM_NAMES.join(", ")}`);
     }
-    throw new Error(`invalid role "${role}", expected one of ${SUPPORTED_ROLES.join(", ")}`);
+    return role;
 }
 
 export function loadConfig(args: string[] = process.argv.slice(2), env: NodeJS.ProcessEnv = process.env): AdapterConfig {
