@@ -1,12 +1,14 @@
 {
     "name": "mcp-file-adapter",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "Local MCP stdio adapter for remote file service.",
     "license": "MIT",
     "type": "module",
     "main": "dist/index.js",
     "files": [
-        "dist"
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
     ],
     "bin": {
         "mcp-file-adapter": "dist/index.js"

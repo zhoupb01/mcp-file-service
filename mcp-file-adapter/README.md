@@ -2,6 +2,8 @@
 
 本地 MCP stdio 适配器：将 4 个工具调用转为远程 HTTP 请求，并直接上传/下载文件。
 
+变更记录见 [CHANGELOG.md](./CHANGELOG.md)。
+
 ## 环境变量
 
 - `REMOTE_BASE_URL`: 远程服务地址，默认 `http://localhost:8080`
