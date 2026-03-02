@@ -12,6 +12,7 @@ import { fail, ok, type ToolResult } from "./result.js";
 export function createServer(config: AdapterConfig): McpServer {
     const { role, user } = config;
     const remote = createRemoteClient(config);
+    const resolveScopedRemotePath = (remotePath: string): string => resolveArchiveWritePath(resolveRemotePath(remotePath, role), user);
     const server = new McpServer({
         name: role ? `mcp-file-adapter[${role}]` : "mcp-file-adapter",
         version: "0.1.0",
@@ -39,7 +40,7 @@ export function createServer(config: AdapterConfig): McpServer {
             }),
         },
         async ({ path: relPath }: { path: string }): Promise<ToolResult> => {
-            const url = remote.buildUrl("/list", { path: resolveRemotePath(relPath, role) });
+            const url = remote.buildUrl("/list", { path: resolveScopedRemotePath(relPath) });
             const res = await remote.fetchWithTimeout(url, {
                 method: "GET",
                 headers: { Authorization: `Bearer ${remote.authToken}` },
@@ -71,7 +72,7 @@ export function createServer(config: AdapterConfig): McpServer {
             }),
         },
         async ({ path: relPath, recursive }: { path: string; recursive?: boolean }): Promise<ToolResult> => {
-            const resolvedPath = resolveArchiveWritePath(resolveRemotePath(relPath, role), user);
+            const resolvedPath = resolveScopedRemotePath(relPath);
             return remote.postJson("/mkdir", { path: resolvedPath, recursive: recursive ?? true });
         }
     );
@@ -113,7 +114,7 @@ export function createServer(config: AdapterConfig): McpServer {
                 const localFull = resolveLocalPath(localPath);
                 const stat = await fs.stat(localFull);
                 if (!stat.isFile()) return fail("invalid local path", "EISDIR");
-                const resolvedRemotePath = resolveArchiveWritePath(resolveRemotePath(remotePath, role), user);
+                const resolvedRemotePath = resolveScopedRemotePath(remotePath);
                 const url = remote.buildUrl("/upload", {
                     path: resolvedRemotePath,
                     overwrite: overwrite ? "1" : "0",
@@ -193,7 +194,7 @@ export function createServer(config: AdapterConfig): McpServer {
                         if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
                     }
                 }
-                const resolvedRemotePath = resolveRemotePath(remotePath, role);
+                const resolvedRemotePath = resolveScopedRemotePath(remotePath);
                 const res = await remote.fetchWithTimeout(remote.buildUrl("/download", { path: resolvedRemotePath }), {
                     method: "GET",
                     headers: { Authorization: `Bearer ${remote.authToken}` },
@@ -206,7 +207,7 @@ export function createServer(config: AdapterConfig): McpServer {
                 return ok({
                     ok: true,
                     local_path: localPath,
-                    remote_path: remotePath,
+                    remote_path: resolvedRemotePath,
                     size: stat.size,
                 });
             } catch (err) {

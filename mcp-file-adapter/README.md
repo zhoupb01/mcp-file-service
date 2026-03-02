@@ -34,9 +34,9 @@
 设置角色后：
 
 - 当远程路径是 `template` 或 `template/...`，自动映射为 `<role>/template/...`
-- 写操作命中 `archive/<bizId>/...` 且设置了 `user` 时，自动重写为 `archive/<bizId>/<user>/...`
+- 读写操作命中 `archive/<bizId>/...` 且设置了 `user` 时，自动重写为 `archive/<bizId>/<user>/...`
 - 示例：输入 `archive/123/spec.md` + `user=alice`，实际写入 `archive/123/alice/spec.md`
-- 读操作不自动重写，仍按传入路径读取
+- `list_files`/`download_file` 也会按上述规则重写路径
 - `list_files({ path: "" })` 时，仅暴露逻辑根目录：`template` 和 `archive`
 
 ## 工具
