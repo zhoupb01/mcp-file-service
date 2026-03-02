@@ -1,0 +1,17 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { overflow: hidden; }
+.scrollbar-thin::-webkit-scrollbar { width: 6px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+.file-row:hover .file-actions { opacity: 1; }
+.file-actions { opacity: 0; transition: opacity 0.15s; }
+.modal-overlay { animation: fadeIn 0.15s ease-out; }
+.modal-content { animation: slideUp 0.2s ease-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: scale(0.97) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.preview-enter { animation: previewIn 0.2s ease-out; }
+@keyframes previewIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+.drop-active { border-color: #dd3131 !important; background: #fef2f2 !important; }
+.resize-handle { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; cursor: col-resize; z-index: 10; }
+.resize-handle:hover, .resize-handle.active { background: #dd3131; }

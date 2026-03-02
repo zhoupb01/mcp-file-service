@@ -2,7 +2,6 @@ import express from "express";
 import { createReadStream } from "node:fs";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { renderUiHtml } from "./ui.js";
 import { MAX_BODY_MB, PORT, ROOT_DIR } from "./config.js";
 import { requireAuth } from "./auth.js";
 import { sendHttpError } from "./errors.js";
@@ -17,12 +16,16 @@ type DirEntry = {
 
 export async function startServer(): Promise<void> {
     const app = express();
+    const uiHtmlPath = new URL("./ui.html", import.meta.url);
+    const uiHtml = await fs.readFile(uiHtmlPath, "utf8");
+    const publicDir = new URL("./public", import.meta.url).pathname;
 
     app.use(express.json({ limit: `${MAX_BODY_MB}mb` }));
+    app.use("/public", express.static(publicDir));
 
     app.get("/", (_req, res) => {
         res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.send(renderUiHtml());
+        res.send(uiHtml);
     });
 
     app.get("/list", requireAuth, async (req, res) => {
@@ -135,6 +138,35 @@ export async function startServer(): Promise<void> {
             }
         }
     );
+
+    app.post("/delete", requireAuth, async (req, res) => {
+        try {
+            const relPath = req.body?.path;
+            if (typeof relPath !== "string" || !relPath) {
+                res.status(400).json({ ok: false, error: "invalid path" });
+                return;
+            }
+            const full = resolveSafePath(relPath);
+            if (full === ROOT_DIR) {
+                res.status(400).json({ ok: false, error: "cannot delete root" });
+                return;
+            }
+            const stat = await fs.stat(full);
+            if (stat.isDirectory()) {
+                const children = await fs.readdir(full);
+                if (children.length > 0) {
+                    res.status(400).json({ ok: false, error: "directory not empty" });
+                    return;
+                }
+                await fs.rmdir(full);
+            } else {
+                await fs.unlink(full);
+            }
+            res.json({ ok: true });
+        } catch (err) {
+            sendHttpError(res, err);
+        }
+    });
 
     app.listen(PORT, () => {
         console.log(`file-service listening on http://localhost:${PORT}`);

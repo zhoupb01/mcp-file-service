@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>文件服务</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: "#fef2f2",
+                            100: "#fee2e2",
+                            200: "#fecaca",
+                            300: "#f9a8a8",
+                            400: "#ee6b6b",
+                            500: "#dd3131",
+                            600: "#c42828",
+                            700: "#a52222",
+                            800: "#881f1f",
+                            900: "#711f1f",
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['"Inter"', '"Noto Sans SC"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+                    },
+                },
+            },
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/public/ui.css" />
+</head>
+<body class="h-screen bg-gray-50 text-gray-900 font-sans">
+    <!-- 顶栏 -->
+    <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20 relative">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+            </div>
+            <span class="text-base font-semibold text-gray-900">文件服务</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button id="uploadModalBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                上传
+            </button>
+            <button id="mkdirModalBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
+                </svg>
+                新建目录
+            </button>
+            <div class="w-px h-6 bg-gray-200 mx-1"></div>
+            <button id="settingsBtn" class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500" title="设置令牌">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主体 -->
+    <div class="flex" style="height: calc(100vh - 3.5rem);">
+        <!-- 文件列表区 -->
+        <div id="mainPanel" class="flex-1 flex flex-col min-w-0">
+            <!-- 面包屑 -->
+            <div class="px-4 py-2.5 border-b border-gray-200 bg-white flex items-center gap-2 shrink-0">
+                <nav id="breadcrumb" class="flex items-center gap-1 text-sm min-w-0 flex-1 overflow-x-auto scrollbar-thin"></nav>
+                <button id="refreshBtn" class="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors" title="刷新">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 文件表格 -->
+            <div class="flex-1 overflow-y-auto scrollbar-thin" id="fileListContainer">
+                <div class="sticky top-0 bg-gray-50 border-b border-gray-200 grid grid-cols-[1fr_100px_100px_160px] gap-2 px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider z-10">
+                    <span>名称</span>
+                    <span>类型</span>
+                    <span>大小</span>
+                    <span>修改时间</span>
+                </div>
+                <div id="fileRows" class="divide-y divide-gray-100"></div>
+                <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-gray-400">
+                    <svg class="w-16 h-16 mb-4 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <p class="text-sm font-medium">此目录为空</p>
+                    <p class="text-xs mt-1">上传文件或新建目录开始使用</p>
+                </div>
+                <div id="loadingState" class="hidden flex-col items-center justify-center py-20 text-gray-400">
+                    <svg class="w-8 h-8 animate-spin text-brand-500" viewBox="0 0 24 24" fill="none">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    <p class="text-sm mt-3">加载中...</p>
+                </div>
+            </div>
+
+            <!-- 底部状态栏 -->
+            <div class="px-4 py-1.5 border-t border-gray-200 bg-white text-xs text-gray-500 flex items-center justify-between shrink-0">
+                <span id="statusLine"></span>
+                <span id="statInfo"></span>
+            </div>
+        </div>
+
+        <!-- 预览面板 -->
+        <div id="previewPanel" class="hidden w-[420px] border-l border-gray-200 bg-white flex flex-col shrink-0 relative z-10">
+            <div id="resizeHandle" class="resize-handle"></div>
+            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between shrink-0">
+                <h3 id="previewTitle" class="text-sm font-semibold text-gray-900 truncate"></h3>
+                <button id="closePreviewBtn" class="p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="previewBody" class="flex-1 overflow-auto scrollbar-thin p-4"></div>
+            <div id="previewFooter" class="px-4 py-3 border-t border-gray-200 shrink-0">
+                <div id="previewMeta" class="text-xs text-gray-500 space-y-1"></div>
+                <button id="previewDownloadBtn" class="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    下载文件
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 认证 Modal -->
+    <div id="authModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
+        <div class="modal-overlay absolute inset-0 bg-black/30" data-close-modal></div>
+        <div class="modal-content relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h2 class="text-lg font-semibold text-gray-900">访问令牌</h2>
+                <button class="p-1 rounded-md hover:bg-gray-100 text-gray-400" data-close-modal>
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">输入访问令牌以使用文件服务。令牌将保存在浏览器本地存储中。</p>
+            <input id="tokenInput" type="password" placeholder="请输入访问令牌" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition" />
+            <div class="flex gap-3 mt-5">
+                <button id="saveTokenBtn" class="flex-1 px-4 py-2.5 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors">保存令牌</button>
+                <button class="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors" data-close-modal>取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上传 Modal -->
+    <div id="uploadModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
+        <div class="modal-overlay absolute inset-0 bg-black/30" data-close-modal></div>
+        <div class="modal-content relative w-full max-w-lg bg-white rounded-2xl shadow-xl p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h2 class="text-lg font-semibold text-gray-900">上传文件</h2>
+                <button class="p-1 rounded-md hover:bg-gray-100 text-gray-400" data-close-modal>
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <p class="text-sm text-gray-500 mb-1">上传到: <span id="uploadPathLabel" class="font-mono text-gray-700">/</span></p>
+            <div id="dropzone" class="mt-3 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-brand-400 hover:bg-brand-50/30 transition-colors">
+                <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p class="text-sm font-medium text-gray-600">拖拽文件到此处，或点击选择</p>
+                <p class="text-xs text-gray-400 mt-1">支持多文件上传</p>
+                <input id="fileInput" type="file" multiple class="hidden" />
+            </div>
+            <div id="fileQueue" class="mt-3 max-h-40 overflow-y-auto scrollbar-thin space-y-1 hidden"></div>
+            <div class="flex items-center gap-4 mt-4 text-sm text-gray-600">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input id="overwriteInput" type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
+                    覆盖已有文件
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input id="mkdirsInput" type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
+                    自动创建目录
+                </label>
+            </div>
+            <div id="uploadProgress" class="hidden mt-4">
+                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                    <div id="uploadProgressBar" class="bg-brand-500 h-1.5 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+                <p id="uploadProgressText" class="text-xs text-gray-500 mt-1"></p>
+            </div>
+            <div class="flex gap-3 mt-5">
+                <button id="uploadBtn" class="flex-1 px-4 py-2.5 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>上传</button>
+                <button class="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors" data-close-modal>取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建目录 Modal -->
+    <div id="mkdirModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
+        <div class="modal-overlay absolute inset-0 bg-black/30" data-close-modal></div>
+        <div class="modal-content relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h2 class="text-lg font-semibold text-gray-900">新建目录</h2>
+                <button class="p-1 rounded-md hover:bg-gray-100 text-gray-400" data-close-modal>
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">在当前路径下创建新目录。支持多级路径（如 <code class="bg-gray-100 px-1 rounded text-xs">a/b/c</code>）。</p>
+            <input id="mkdirNameInput" type="text" placeholder="目录名" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition" />
+            <div class="flex gap-3 mt-5">
+                <button id="mkdirBtn" class="flex-1 px-4 py-2.5 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors">创建</button>
+                <button class="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors" data-close-modal>取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认/提示 Modal -->
+    <div id="confirmModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center">
+        <div class="modal-overlay absolute inset-0 bg-black/30" data-close-modal></div>
+        <div class="modal-content relative w-full max-w-sm bg-white rounded-2xl shadow-xl p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </div>
+                <h2 id="confirmTitle" class="text-lg font-semibold text-gray-900"></h2>
+            </div>
+            <p id="confirmMessage" class="text-sm text-gray-500 mb-5"></p>
+            <div class="flex gap-3">
+                <button id="confirmOkBtn" class="flex-1 px-4 py-2.5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors">删除</button>
+                <button id="confirmCancelBtn" class="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/public/ui.js"></script>
+</body>
+</html>
