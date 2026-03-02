@@ -4,6 +4,12 @@
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。
 
+## 最新变更（npm 页面可见）
+
+- `0.1.8`：README 增加内联版本摘要，npm 页面可直接查看最近变更。
+- `0.1.7`：发布包包含 `README.md` 与 `CHANGELOG.md`。
+- `0.1.6`：`list_files`/`download_file` 也应用 `archive/<bizId>/<user>/...` 路径重写。
+
 ## 环境变量
 
 - `REMOTE_BASE_URL`: 远程服务地址，默认 `http://localhost:8080`
