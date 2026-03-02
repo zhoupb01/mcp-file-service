@@ -7,11 +7,13 @@
 - `REMOTE_BASE_URL`: 远程服务地址，默认 `http://localhost:8080`
 - `TIMEOUT_MS`: 请求超时（毫秒），默认 `30000`
 - `REMOTE_ROLE`: 角色名（当未传 `--role` 时生效）
+- `REMOTE_USER`: 用户标识（当未传 `--user` 时生效）
 
 ## 启动参数
 
 - `--remote-base-url=...`: 覆盖 `REMOTE_BASE_URL`
 - `--role=...`: 角色名，优先级高于 `REMOTE_ROLE`
+- `--user=...`: 用户标识，优先级高于 `REMOTE_USER`
 
 参数解析使用 `node:util.parseArgs`（严格模式），未知参数会直接报错退出。
 
@@ -32,7 +34,9 @@
 设置角色后：
 
 - 当远程路径是 `template` 或 `template/...`，自动映射为 `<role>/template/...`
-- `archive/...` 不加前缀，保持公共共享
+- 写操作命中 `archive/<bizId>/...` 且设置了 `user` 时，自动重写为 `archive/<bizId>/<user>/...`
+- 示例：输入 `archive/123/spec.md` + `user=alice`，实际写入 `archive/123/alice/spec.md`
+- 读操作不自动重写，仍按传入路径读取
 - `list_files({ path: "" })` 时，仅暴露逻辑根目录：`template` 和 `archive`
 
 ## 工具

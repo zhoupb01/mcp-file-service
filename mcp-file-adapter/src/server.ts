@@ -5,12 +5,12 @@ import { pipeline } from "node:stream/promises";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { AdapterConfig } from "./config.js";
-import { resolveLocalPath, resolveRemotePath, rewriteRoleRootEntries } from "./paths.js";
+import { resolveArchiveWritePath, resolveLocalPath, resolveRemotePath, rewriteRoleRootEntries } from "./paths.js";
 import { createRemoteClient } from "./remote.js";
 import { fail, ok, type ToolResult } from "./result.js";
 
 export function createServer(config: AdapterConfig): McpServer {
-    const { role } = config;
+    const { role, user } = config;
     const remote = createRemoteClient(config);
     const server = new McpServer({
         name: role ? `mcp-file-adapter[${role}]` : "mcp-file-adapter",
@@ -71,7 +71,8 @@ export function createServer(config: AdapterConfig): McpServer {
             }),
         },
         async ({ path: relPath, recursive }: { path: string; recursive?: boolean }): Promise<ToolResult> => {
-            return remote.postJson("/mkdir", { path: resolveRemotePath(relPath, role), recursive: recursive ?? true });
+            const resolvedPath = resolveArchiveWritePath(resolveRemotePath(relPath, role), user);
+            return remote.postJson("/mkdir", { path: resolvedPath, recursive: recursive ?? true });
         }
     );
 
@@ -112,8 +113,9 @@ export function createServer(config: AdapterConfig): McpServer {
                 const localFull = resolveLocalPath(localPath);
                 const stat = await fs.stat(localFull);
                 if (!stat.isFile()) return fail("invalid local path", "EISDIR");
+                const resolvedRemotePath = resolveArchiveWritePath(resolveRemotePath(remotePath, role), user);
                 const url = remote.buildUrl("/upload", {
-                    path: resolveRemotePath(remotePath, role),
+                    path: resolvedRemotePath,
                     overwrite: overwrite ? "1" : "0",
                     mkdirs: mkdirs ? "1" : "0",
                 });
@@ -135,7 +137,7 @@ export function createServer(config: AdapterConfig): McpServer {
                 return ok({
                     ok: true,
                     local_path: localPath,
-                    remote_path: remotePath,
+                    remote_path: resolvedRemotePath,
                     size: stat.size,
                 });
             } catch (err) {

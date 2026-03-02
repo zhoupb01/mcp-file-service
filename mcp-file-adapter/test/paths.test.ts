@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolveRemotePath, rewriteRoleRootEntries } from "../src/paths.js";
+import { resolveArchiveWritePath, resolveRemotePath, rewriteRoleRootEntries } from "../src/paths.js";
 
 test("resolveRemotePath: role 下 template 自动加前缀", () => {
     assert.equal(resolveRemotePath("template", "java"), "java/template");
@@ -28,4 +28,24 @@ test("rewriteRoleRootEntries: 根目录仅暴露 template 和 archive", () => {
             { name: "template", type: "dir", mtimeMs: 2 },
         ],
     });
+});
+
+test("resolveArchiveWritePath: archive 路径注入 user 目录", () => {
+    assert.equal(resolveArchiveWritePath("archive/123/123-prd.md", "alice"), "archive/123/alice/123-prd.md");
+    assert.equal(resolveArchiveWritePath("archive/123", "alice"), "archive/123/alice");
+});
+
+test("resolveArchiveWritePath: 非 archive 路径不变", () => {
+    assert.equal(resolveArchiveWritePath("template/abc.md", "alice"), "template/abc.md");
+});
+
+test("resolveArchiveWritePath: user 为空不变", () => {
+    assert.equal(resolveArchiveWritePath("archive/123/123-prd.md", ""), "archive/123/123-prd.md");
+});
+
+test("resolveArchiveWritePath: 已注入同 user 不重复注入", () => {
+    assert.equal(
+        resolveArchiveWritePath("archive/123/alice/123-prd.md", "alice"),
+        "archive/123/alice/123-prd.md"
+    );
 });

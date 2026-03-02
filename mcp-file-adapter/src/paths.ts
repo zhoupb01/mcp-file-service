@@ -22,6 +22,14 @@ export function resolveRemotePath(remotePath: string, role: RoleValue): string {
     return remotePath;
 }
 
+export function resolveArchiveWritePath(remotePath: string, user: string): string {
+    if (!user) return remotePath;
+    const segments = remotePath.split("/");
+    if (segments[0] !== "archive" || !segments[1]) return remotePath;
+    if (segments[2] === user) return remotePath;
+    return ["archive", segments[1], user, ...segments.slice(2)].join("/");
+}
+
 function isDirEntry(value: unknown): value is DirEntry {
     if (typeof value !== "object" || value === null) return false;
     const entry = value as Record<string, unknown>;

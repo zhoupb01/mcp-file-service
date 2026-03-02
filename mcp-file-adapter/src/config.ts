@@ -8,6 +8,7 @@ export type AdapterConfig = {
     authToken: string;
     timeoutMs: number;
     role: SupportedRole | "";
+    user: string;
 };
 
 const DEFAULT_REMOTE_BASE_URL = "http://localhost:8080";
@@ -17,6 +18,7 @@ const AUTH_TOKEN = "mcp-file-service-token";
 type CliValues = {
     "remote-base-url"?: string;
     role?: string | boolean;
+    user?: string | boolean;
 };
 
 function parseCliValues(args: string[]): CliValues {
@@ -28,6 +30,7 @@ function parseCliValues(args: string[]): CliValues {
             options: {
                 "remote-base-url": { type: "string" },
                 role: { type: "string" },
+                user: { type: "string" },
             },
         });
         return values as CliValues;
@@ -39,6 +42,9 @@ function parseCliValues(args: string[]): CliValues {
                     ", "
                 )}`
             );
+        }
+        if (message.includes("--user")) {
+            throw new Error("invalid --user: missing value, expected non-empty string");
         }
         throw err;
     }
@@ -77,14 +83,34 @@ function parseRole(rawRole: string | boolean | undefined, source: "cli" | "env")
     return role;
 }
 
+function parseUser(rawUser: string | boolean | undefined, source: "cli" | "env"): string {
+    if (rawUser === undefined) return "";
+    if (typeof rawUser !== "string") {
+        if (rawUser === true) {
+            throw new Error("invalid --user: missing value, expected non-empty string");
+        }
+        throw new Error("invalid --user: expected string value, expected non-empty string");
+    }
+    const user = rawUser.trim();
+    if (!user) {
+        if (source === "cli") {
+            throw new Error("invalid --user: empty value, expected non-empty string");
+        }
+        return "";
+    }
+    return user;
+}
+
 export function loadConfig(args: string[] = process.argv.slice(2), env: NodeJS.ProcessEnv = process.env): AdapterConfig {
     const values = parseCliValues(args);
     const role = values.role !== undefined ? parseRole(values.role, "cli") : parseRole(env.REMOTE_ROLE, "env");
+    const user = values.user !== undefined ? parseUser(values.user, "cli") : parseUser(env.REMOTE_USER, "env");
 
     return {
         remoteBaseUrl: values["remote-base-url"] || env.REMOTE_BASE_URL || DEFAULT_REMOTE_BASE_URL,
         authToken: AUTH_TOKEN,
         timeoutMs: Number(env.TIMEOUT_MS || DEFAULT_TIMEOUT_MS),
         role,
+        user,
     };
 }
