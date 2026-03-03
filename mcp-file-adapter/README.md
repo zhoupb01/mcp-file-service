@@ -55,6 +55,82 @@
   - overwrite: 是否覆盖本地同名文件
   - mkdirs: 是否创建本地父目录
 
+## 使用方式
+
+先固定一组上下文字段：
+- `biz`: 业务域，例如 `kilimallspec`
+- `req`: 需求 ID，例如 `234898756`
+- `scope`: `shared` 或 `user`
+
+### 1) 列共享目录
+
+```json
+{
+  "tool": "list_files",
+  "arguments": {
+    "biz": "kilimallspec",
+    "req": "234898756",
+    "scope": "shared",
+    "rel_path": ""
+  }
+}
+```
+
+### 2) 在用户目录创建子目录
+
+```json
+{
+  "tool": "dir_mkdir",
+  "arguments": {
+    "biz": "kilimallspec",
+    "req": "234898756",
+    "scope": "user",
+    "rel_path": "design",
+    "recursive": true
+  }
+}
+```
+
+### 3) 上传文件到共享目录
+
+```json
+{
+  "tool": "upload_file",
+  "arguments": {
+    "local_path": "kilimallspec/design/234898756/234898756-物品同步-design.md",
+    "biz": "kilimallspec",
+    "req": "234898756",
+    "scope": "shared",
+    "rel_path": "234898756-物品同步-design.md",
+    "overwrite": true,
+    "mkdirs": true
+  }
+}
+```
+
+### 4) 下载共享 PRD 到本地
+
+```json
+{
+  "tool": "download_file",
+  "arguments": {
+    "biz": "kilimallspec",
+    "req": "234898756",
+    "scope": "shared",
+    "rel_path": "234898756-物品同步-prd.md",
+    "local_path": "kilimallspec/design/234898756/234898756-物品同步-prd.md",
+    "overwrite": true,
+    "mkdirs": true
+  }
+}
+```
+
+### 5) 迁移提示（从旧参数到新参数）
+
+- 旧：`list_files(path)` -> 新：`list_files(biz, req, scope, rel_path)`
+- 旧：`upload_file(remote_path)` -> 新：`upload_file(biz, req, scope, rel_path)`
+- 旧：`download_file(remote_path)` -> 新：`download_file(biz, req, scope, rel_path)`
+
 ## 运行
 
 ```bash
