@@ -15,23 +15,15 @@
 
 - `REMOTE_BASE_URL`: 远程服务地址，默认 `http://localhost:8080`
 - `TIMEOUT_MS`: 请求超时（毫秒），默认 `30000`
-- `REMOTE_ROLE`: 角色名（当未传 `--role` 时生效）
 - `REMOTE_USER`: 用户标识（当未传 `--user` 时生效）
 
 ## 启动参数
 
 - `--remote-base-url=...`: 覆盖 `REMOTE_BASE_URL`
 - `--auth-token=...`: 远程服务鉴权 token（必填）
-- `--role=...`: 角色名，优先级高于 `REMOTE_ROLE`
 - `--user=...`: 用户标识，优先级高于 `REMOTE_USER`
 
 参数解析使用 `node:util.parseArgs`（严格模式），未知参数会直接报错退出。
-
-## Role 规则
-
-- `role` 不再是固定枚举，任意非空字符串都可用
-- 但不能与系统保留名冲突：`template`、`archive`
-- 空值（`--role=`）或缺值（`--role`）都会报错
 
 ## 鉴权
 
@@ -39,30 +31,26 @@
 
 ## 路径映射规则
 
-- 未设置角色：路径原样透传
+- 工具不再接受完整 `remote_path`，统一使用结构化字段：`biz`、`req`、`scope`、`rel_path`
+- `scope=shared` -> `archive/<biz>/<req>/shared/<rel_path>`
+- `scope=user` -> `archive/<biz>/<req>/users/<user>/<rel_path>`（`user` 来自 `--user` 或 `REMOTE_USER`）
+- `rel_path` 为空时表示对应 scope 的根目录
 
-设置角色后：
-
-- 当远程路径是 `template` 或 `template/...`，自动映射为 `<role>/template/...`
-- 读写操作命中 `archive/<bizId>/...` 且设置了 `user` 时，自动重写为 `archive/<bizId>/<user>/...`
-- 示例：输入 `archive/123/spec.md` + `user=alice`，实际写入 `archive/123/alice/spec.md`
-- `list_files`/`download_file` 也会按上述规则重写路径
-- `list_files({ path: "" })` 时，仅暴露逻辑根目录：`template` 和 `archive`
+> 注意：当前是“约定隔离”，不是“安全隔离”。持有 token 的请求仍可访问任意路径。
 
 ## 工具
 
-- `list_files { path }`
-  - path: 远程相对路径，空字符串表示根目录
-- `dir_mkdir { path, recursive? }`
-  - path: 远程相对路径
+- `list_files { biz, req, scope, rel_path? }`
+  - biz/req: 业务域与需求标识
+  - scope: `shared` 或 `user`
+  - rel_path: scope 下相对路径，空表示 scope 根目录
+- `dir_mkdir { biz, req, scope, rel_path?, recursive? }`
   - recursive: 是否递归创建父目录（默认 true）
-- `upload_file { local_path, remote_path, overwrite?, mkdirs? }`
+- `upload_file { local_path, biz, req, scope, rel_path, overwrite?, mkdirs? }`
   - local_path: 本地文件路径（相对路径基于当前工作目录）
-  - remote_path: 远程相对路径
   - overwrite: 是否覆盖远程同名文件
   - mkdirs: 是否创建远程父目录
-- `download_file { remote_path, local_path, overwrite?, mkdirs? }`
-  - remote_path: 远程相对路径
+- `download_file { biz, req, scope, rel_path, local_path, overwrite?, mkdirs? }`
   - local_path: 本地目标路径（相对路径基于当前工作目录）
   - overwrite: 是否覆盖本地同名文件
   - mkdirs: 是否创建本地父目录

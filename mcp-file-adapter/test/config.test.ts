@@ -4,35 +4,13 @@ import { loadConfig } from "../src/config.js";
 
 const withAuthTokenArgs = (args: string[] = []): string[] => ["--auth-token=test-token", ...args];
 
-test("loadConfig: cli role 优先于环境变量", () => {
-    const config = loadConfig(withAuthTokenArgs(["--role=java-backend"]), { REMOTE_ROLE: "product" });
-    assert.equal(config.role, "java-backend");
-});
-
-test("loadConfig: role 来自环境变量", () => {
+test("loadConfig: 配置中不再包含 role 字段", () => {
     const config = loadConfig(withAuthTokenArgs(), { REMOTE_ROLE: "go-backend" });
-    assert.equal(config.role, "go-backend");
+    assert.equal("role" in config, false);
 });
 
-test("loadConfig: --role 缺失值时报错", () => {
-    assert.throws(
-        () => loadConfig(withAuthTokenArgs(["--role"])),
-        /invalid --role: missing value, expected non-empty string and must not be system names: template, archive/
-    );
-});
-
-test("loadConfig: --role 为空值时报错", () => {
-    assert.throws(
-        () => loadConfig(withAuthTokenArgs(["--role="])),
-        /invalid --role: empty value, expected non-empty string and must not be system names: template, archive/
-    );
-});
-
-test("loadConfig: role 与系统保留名冲突时报错", () => {
-    assert.throws(
-        () => loadConfig(withAuthTokenArgs(["--role=archive"])),
-        /invalid role "archive", role must not be system names: template, archive/
-    );
+test("loadConfig: --role 已废弃，传入时报未知参数", () => {
+    assert.throws(() => loadConfig(withAuthTokenArgs(["--role=java-backend"])), /Unknown option '--role'/);
 });
 
 test("loadConfig: cli user 优先于环境变量", () => {
