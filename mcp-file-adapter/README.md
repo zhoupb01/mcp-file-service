@@ -6,6 +6,7 @@
 
 ## 最新变更（npm 页面可见）
 
+- `0.1.9`：鉴权 token 改为启动参数 `--auth-token`。
 - `0.1.8`：README 增加内联版本摘要，npm 页面可直接查看最近变更。
 - `0.1.7`：发布包包含 `README.md` 与 `CHANGELOG.md`。
 - `0.1.6`：`list_files`/`download_file` 也应用 `archive/<bizId>/<user>/...` 路径重写。
@@ -20,6 +21,7 @@
 ## 启动参数
 
 - `--remote-base-url=...`: 覆盖 `REMOTE_BASE_URL`
+- `--auth-token=...`: 远程服务鉴权 token（必填）
 - `--role=...`: 角色名，优先级高于 `REMOTE_ROLE`
 - `--user=...`: 用户标识，优先级高于 `REMOTE_USER`
 
@@ -33,7 +35,7 @@
 
 ## 鉴权
 
-- 固定 token: `mcp-file-service-token`
+- Header: `Authorization: Bearer <auth-token>`
 
 ## 路径映射规则
 
@@ -69,7 +71,7 @@
 
 ```bash
 npm install
-npm run dev
+npm run dev -- --auth-token=your-token
 ```
 
 ## 测试

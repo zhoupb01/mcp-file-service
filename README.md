@@ -18,23 +18,25 @@
 ```bash
 cd file-service
 npm install
+FILE_SERVICE_TOKEN=your-token \
 npm run dev
 ```
 
 默认：
 - 端口：`8080`
-- 鉴权：`Authorization: Bearer mcp-file-service-token`
+- 鉴权：`Authorization: Bearer <FILE_SERVICE_TOKEN>`
 
 ### 2) 启动 mcp-file-adapter
 
 ```bash
 cd mcp-file-adapter
 npm install
-npm run dev
+npm run dev -- --auth-token=your-token
 ```
 
 常用配置：
 - `REMOTE_BASE_URL`：远程地址，默认 `http://localhost:8080`
+- `--auth-token`：远程服务鉴权 token（`mcp-file-adapter` 启动参数，必填）
 - `REMOTE_ROLE` / `--role`：角色
 - `REMOTE_USER` / `--user`：用户标识（用于 `archive/<bizId>/<user>/...` 路径重写）
 

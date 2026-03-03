@@ -6,6 +6,19 @@
 - 版本遵循语义化版本（SemVer）。
 - `0.1.2` 及以前为基于 git 提交的补录，可能不完整。
 
+## [0.1.9] - 2026-03-03
+
+### Changed
+- 鉴权 token 改为必填启动参数 `--auth-token`。
+- 不再使用硬编码 token，也不再从环境变量读取 token。
+
+### Tests
+- `test/config.test.ts` 增加 `--auth-token` 解析/缺失/空值用例。
+- 现有配置用例改为统一通过启动参数注入 token。
+
+### Docs
+- 更新 `README.md`：将 token 配置方式改为 `--auth-token` 启动参数。
+
 ## [0.1.8] - 2026-03-02
 
 ### Changed

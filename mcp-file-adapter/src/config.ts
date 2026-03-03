@@ -13,9 +13,9 @@ export type AdapterConfig = {
 
 const DEFAULT_REMOTE_BASE_URL = "http://localhost:8080";
 const DEFAULT_TIMEOUT_MS = 30000;
-const AUTH_TOKEN = "mcp-file-service-token";
 
 type CliValues = {
+    "auth-token"?: string | boolean;
     "remote-base-url"?: string;
     role?: string | boolean;
     user?: string | boolean;
@@ -28,6 +28,7 @@ function parseCliValues(args: string[]): CliValues {
             strict: true,
             allowPositionals: false,
             options: {
+                "auth-token": { type: "string" },
                 "remote-base-url": { type: "string" },
                 role: { type: "string" },
                 user: { type: "string" },
@@ -45,6 +46,9 @@ function parseCliValues(args: string[]): CliValues {
         }
         if (message.includes("--user")) {
             throw new Error("invalid --user: missing value, expected non-empty string");
+        }
+        if (message.includes("--auth-token")) {
+            throw new Error("invalid --auth-token: missing value, expected non-empty string");
         }
         throw err;
     }
@@ -101,6 +105,20 @@ function parseUser(rawUser: string | boolean | undefined, source: "cli" | "env")
     return user;
 }
 
+function parseAuthToken(rawToken: string | boolean | undefined): string {
+    if (rawToken === undefined) {
+        throw new Error("missing required --auth-token");
+    }
+    if (typeof rawToken !== "string") {
+        throw new Error("invalid --auth-token: expected string value, expected non-empty string");
+    }
+    const token = rawToken.trim();
+    if (!token) {
+        throw new Error("invalid --auth-token: empty value, expected non-empty string");
+    }
+    return token;
+}
+
 export function loadConfig(args: string[] = process.argv.slice(2), env: NodeJS.ProcessEnv = process.env): AdapterConfig {
     const values = parseCliValues(args);
     const role = values.role !== undefined ? parseRole(values.role, "cli") : parseRole(env.REMOTE_ROLE, "env");
@@ -108,7 +126,7 @@ export function loadConfig(args: string[] = process.argv.slice(2), env: NodeJS.P
 
     return {
         remoteBaseUrl: values["remote-base-url"] || env.REMOTE_BASE_URL || DEFAULT_REMOTE_BASE_URL,
-        authToken: AUTH_TOKEN,
+        authToken: parseAuthToken(values["auth-token"]),
         timeoutMs: Number(env.TIMEOUT_MS || DEFAULT_TIMEOUT_MS),
         role,
         user,
