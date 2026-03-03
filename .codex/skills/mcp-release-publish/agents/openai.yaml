@@ -1,0 +1,4 @@
+interface:
+  display_name: "MCP Release Publish"
+  short_description: "Commit and publish npm + Docker for this MCP repo"
+  default_prompt: "按 mcp-release-publish 流程执行：先校验版本与 changelog，再测试构建，提交代码，发布 npm，推送 Docker latest，并输出发布结果。"
