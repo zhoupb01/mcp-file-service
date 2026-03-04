@@ -6,6 +6,23 @@
 - 版本遵循语义化版本（SemVer）。
 - `0.1.2` 及以前为基于 git 提交的补录，可能不完整。
 
+## [0.2.0] - 2026-03-04
+
+### Changed
+- 工具入参改为结构化字段：`biz`、`req`、`scope`、`rel_path`。
+- 不再接受旧的 `path` / `remote_path` 透传模式。
+- archive 路径统一为协议化构造：
+  - `scope=shared` -> `archive/<biz>/<req>/shared/<rel_path>`
+  - `scope=user` -> `archive/<biz>/<req>/users/<user>/<rel_path>`
+- `role` 相关逻辑与参数移除。
+
+### Tests
+- `test/paths.test.ts` 改为覆盖结构化路径构造与参数校验。
+
+### Docs
+- `README.md` 新增“使用方式”示例（list/mkdir/upload/download）。
+- 明确“约定隔离，不是安全隔离”。
+
 ## [0.1.9] - 2026-03-03
 
 ### Changed

@@ -6,10 +6,10 @@
 
 ## 最新变更（npm 页面可见）
 
+- `0.2.0`：工具改为结构化入参（`biz/req/scope/rel_path`），移除旧 `path/remote_path` 透传。
 - `0.1.9`：鉴权 token 改为启动参数 `--auth-token`。
 - `0.1.8`：README 增加内联版本摘要，npm 页面可直接查看最近变更。
 - `0.1.7`：发布包包含 `README.md` 与 `CHANGELOG.md`。
-- `0.1.6`：`list_files`/`download_file` 也应用 `archive/<bizId>/<user>/...` 路径重写。
 
 ## 环境变量
 
