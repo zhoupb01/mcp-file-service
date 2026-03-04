@@ -15,7 +15,7 @@
 
 ## 接口
 
-- GET /list?path=...  列目录，返回 JSON
+- GET /list?path=...&q=...  列目录；q 非空时按当前 path 递归搜索，返回 JSON
 - GET /download?path=...  下载文件，返回二进制
 - POST /mkdir  JSON { path, recursive? }
 - POST /upload?path=...&overwrite=0|1&mkdirs=0|1  二进制 body

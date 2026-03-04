@@ -1,5 +1,5 @@
 import express from "express";
-import { createReadStream } from "node:fs";
+import { createReadStream, type Dirent } from "node:fs";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { MAX_BODY_MB, PORT, ROOT_DIR } from "./config.js";
@@ -13,6 +13,44 @@ type DirEntry = {
     size?: number;
     mtimeMs: number;
 };
+
+async function buildEntry(parent: string, dirent: Dirent, relativeName: string): Promise<DirEntry> {
+    const fullPath = path.join(parent, dirent.name);
+    const stat = await fs.stat(fullPath);
+    return {
+        name: relativeName,
+        type: dirent.isDirectory() ? "dir" : "file",
+        size: dirent.isFile() ? stat.size : undefined,
+        mtimeMs: stat.mtimeMs,
+    };
+}
+
+async function listDirectory(fullPath: string): Promise<DirEntry[]> {
+    const dirents = await fs.readdir(fullPath, { withFileTypes: true });
+    return Promise.all(dirents.map((dirent) => buildEntry(fullPath, dirent, dirent.name)));
+}
+
+async function searchDirectoryRecursive(
+    fullPath: string,
+    keywordLower: string,
+    relativePrefix = ""
+): Promise<DirEntry[]> {
+    const dirents = await fs.readdir(fullPath, { withFileTypes: true });
+    const results: DirEntry[] = [];
+    for (const dirent of dirents) {
+        const relativeName = relativePrefix ? `${relativePrefix}/${dirent.name}` : dirent.name;
+        const entry = await buildEntry(fullPath, dirent, relativeName);
+        if (relativeName.toLowerCase().includes(keywordLower)) {
+            results.push(entry);
+        }
+        if (dirent.isDirectory()) {
+            const childFullPath = path.join(fullPath, dirent.name);
+            const childResults = await searchDirectoryRecursive(childFullPath, keywordLower, relativeName);
+            results.push(...childResults);
+        }
+    }
+    return results;
+}
 
 export async function startServer(): Promise<void> {
     const app = express();
@@ -31,20 +69,11 @@ export async function startServer(): Promise<void> {
     app.get("/list", requireAuth, async (req, res) => {
         try {
             const relPath = typeof req.query.path === "string" ? req.query.path : "";
+            const keyword = typeof req.query.q === "string" ? req.query.q.trim() : "";
             const full = resolveSafePath(relPath);
-            const dirents = await fs.readdir(full, { withFileTypes: true });
-            const entries: DirEntry[] = await Promise.all(
-                dirents.map(async (d) => {
-                    const p = path.join(full, d.name);
-                    const stat = await fs.stat(p);
-                    return {
-                        name: d.name,
-                        type: d.isDirectory() ? "dir" : "file",
-                        size: d.isFile() ? stat.size : undefined,
-                        mtimeMs: stat.mtimeMs,
-                    };
-                })
-            );
+            const entries = keyword
+                ? await searchDirectoryRecursive(full, keyword.toLowerCase())
+                : await listDirectory(full);
             res.json({ ok: true, entries });
         } catch (err) {
             sendHttpError(res, err);

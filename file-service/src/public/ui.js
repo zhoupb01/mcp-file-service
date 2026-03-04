@@ -5,10 +5,14 @@
 
     const tokenInput       = $("tokenInput");
     const saveTokenBtn     = $("saveTokenBtn");
+    const searchInput      = $("searchInput");
+    const clearSearchBtn   = $("clearSearchBtn");
     const refreshBtn       = $("refreshBtn");
     const breadcrumb       = $("breadcrumb");
     const fileRows         = $("fileRows");
     const emptyState       = $("emptyState");
+    const emptyStateTitle  = $("emptyStateTitle");
+    const emptyStateHint   = $("emptyStateHint");
     const loadingState     = $("loadingState");
     const statusLine       = $("statusLine");
     const statInfo         = $("statInfo");
@@ -44,14 +48,17 @@
     const confirmOkBtn     = $("confirmOkBtn");
     const confirmCancelBtn = $("confirmCancelBtn");
 
-    const state = { entries: [], currentPath: "", selectedFiles: [], previewEntry: null };
+    const state = { entries: [], currentPath: "", selectedFiles: [], previewEntry: null, searchKeyword: "" };
     const PREVIEW_DEFAULT_RATIO = 1 / 3;
     const PREVIEW_MIN_WIDTH = 320;
     const PREVIEW_MAX_RATIO = 0.8;
     const PREVIEW_MOBILE_BREAKPOINT = 640;
+    const SEARCH_DEBOUNCE_MS = 260;
     let previewHideTimer = null;
     let previewWidth = null;
     let resizingPreview = false;
+    let searchTimer = null;
+    let loadRequestId = 0;
 
     /* ───── 工具函数 ───── */
     const formatBytes = (v) => {
@@ -71,6 +78,10 @@
     const joinPath = (base, name) => {
         const b = base.replace(/^\/+|\/+$/g, "");
         return b ? `${b}/${name}` : name;
+    };
+    const normalizeSearch = (v) => v.trim();
+    const syncSearchUi = () => {
+        clearSearchBtn.classList.toggle("hidden", !normalizeSearch(state.searchKeyword));
     };
 
     const getToken = () => tokenInput.value.trim();
@@ -281,9 +292,19 @@
     /* ───── 文件列表 ───── */
     const renderRows = () => {
         fileRows.innerHTML = "";
+        const keyword = normalizeSearch(state.searchKeyword);
         const show = state.entries.length > 0;
         emptyState.style.display = show ? "none" : "flex";
         loadingState.style.display = "none";
+        if (!show) {
+            if (keyword) {
+                emptyStateTitle.textContent = "未找到匹配结果";
+                emptyStateHint.textContent = "换个关键词试试";
+            } else {
+                emptyStateTitle.textContent = "此目录为空";
+                emptyStateHint.textContent = "上传文件或新建目录开始使用";
+            }
+        }
 
         const sorted = [...state.entries].sort((a, b) => {
             if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
@@ -335,7 +356,10 @@
             fileRows.appendChild(row);
         });
 
-        statInfo.textContent = `${state.entries.length} 项，共 ${formatBytes(state.entries.reduce((s, e) => s + (e.size || 0), 0))}`;
+        const totalSize = state.entries.reduce((s, e) => s + (e.size || 0), 0);
+        statInfo.textContent = keyword
+            ? `${state.entries.length} 项（递归搜索），共 ${formatBytes(totalSize)}`
+            : `${state.entries.length} 项，共 ${formatBytes(totalSize)}`;
     };
 
     const syncUrl = () => {
@@ -345,30 +369,69 @@
         } else {
             url.searchParams.delete("path");
         }
+        const keyword = normalizeSearch(state.searchKeyword);
+        if (keyword) {
+            url.searchParams.set("q", keyword);
+        } else {
+            url.searchParams.delete("q");
+        }
         history.replaceState(null, "", url);
     };
 
     const loadList = async () => {
+        const requestId = ++loadRequestId;
+        const keyword = normalizeSearch(state.searchKeyword);
         loadingState.style.display = "flex";
         emptyState.style.display = "none";
         fileRows.innerHTML = "";
         syncUrl();
         renderBreadcrumb();
 
-        const resp = await apiFetch(`/list?path=${encodeURIComponent(state.currentPath)}`);
-        if (!resp) { loadingState.style.display = "none"; return; }
+        const params = new URLSearchParams({ path: state.currentPath });
+        if (keyword) {
+            params.set("q", keyword);
+        }
+        const resp = await apiFetch(`/list?${params.toString()}`);
+        if (!resp) {
+            if (requestId === loadRequestId) loadingState.style.display = "none";
+            return;
+        }
         const data = await resp.json();
+        if (requestId !== loadRequestId) return;
         if (!resp.ok) {
-            setStatus(data.error || "加载失败");
+            setStatus(data.error || (keyword ? "搜索失败" : "加载失败"));
             loadingState.style.display = "none";
             return;
         }
         state.entries = data.entries || [];
         renderRows();
-        setStatus(`已加载 · ${formatTime(Date.now())}`);
+        setStatus(keyword
+            ? `递归搜索完成 · ${state.entries.length} 项 · ${formatTime(Date.now())}`
+            : `已加载 · ${formatTime(Date.now())}`);
     };
 
     refreshBtn.addEventListener("click", loadList);
+
+    const scheduleSearch = () => {
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            loadList();
+        }, SEARCH_DEBOUNCE_MS);
+    };
+
+    searchInput.addEventListener("input", () => {
+        state.searchKeyword = searchInput.value;
+        syncSearchUi();
+        scheduleSearch();
+    });
+    clearSearchBtn.addEventListener("click", () => {
+        state.searchKeyword = "";
+        searchInput.value = "";
+        syncSearchUi();
+        if (searchTimer) clearTimeout(searchTimer);
+        loadList();
+        searchInput.focus();
+    });
 
     /* ───── 下载 ───── */
     const downloadFile = async (entry) => {
@@ -716,7 +779,21 @@
 
     /* ───── 键盘快捷键 ───── */
     document.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+            return;
+        }
         if (e.key === "Escape") {
+            if (document.activeElement === searchInput && searchInput.value) {
+                state.searchKeyword = "";
+                searchInput.value = "";
+                syncSearchUi();
+                if (searchTimer) clearTimeout(searchTimer);
+                loadList();
+                return;
+            }
             if (state.previewEntry) {
                 closePreview();
                 renderRows();
@@ -728,6 +805,9 @@
 
     /* ───── 初始化 ───── */
     loadToken();
+    state.searchKeyword = new URLSearchParams(window.location.search).get("q") || "";
+    searchInput.value = state.searchKeyword;
+    syncSearchUi();
     state.currentPath = new URLSearchParams(window.location.search).get("path") || "";
     if (!getToken()) {
         openModal(authModal);
