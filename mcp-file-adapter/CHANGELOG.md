@@ -8,6 +8,14 @@
 
 ## [0.2.0] - 2026-03-04
 
+### Breaking
+- 旧参数已删除：
+  - `list_files.path`
+  - `dir_mkdir.path`
+  - `upload_file.remote_path`
+  - `download_file.remote_path`
+- 所有调用方必须迁移到结构化参数：`biz`、`req`、`scope`、`rel_path`。
+
 ### Changed
 - 工具入参改为结构化字段：`biz`、`req`、`scope`、`rel_path`。
 - 不再接受旧的 `path` / `remote_path` 透传模式。
@@ -22,6 +30,12 @@
 ### Docs
 - `README.md` 新增“使用方式”示例（list/mkdir/upload/download）。
 - 明确“约定隔离，不是安全隔离”。
+
+### Migration
+- `list_files(path)` -> `list_files(biz, req, scope, rel_path?)`
+- `dir_mkdir(path, recursive?)` -> `dir_mkdir(biz, req, scope, rel_path?, recursive?)`
+- `upload_file(local_path, remote_path, ...)` -> `upload_file(local_path, biz, req, scope, rel_path, ...)`
+- `download_file(remote_path, local_path, ...)` -> `download_file(biz, req, scope, rel_path, local_path, ...)`
 
 ## [0.1.9] - 2026-03-03
 
