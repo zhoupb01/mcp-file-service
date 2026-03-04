@@ -115,8 +115,9 @@
             </div>
         </div>
 
-        <!-- 预览面板 -->
-        <div id="previewPanel" class="hidden w-[420px] border-l border-gray-200 bg-white flex flex-col shrink-0 relative z-10">
+        <!-- 预览抽屉 -->
+        <div id="previewBackdrop" class="preview-backdrop hidden fixed inset-0 bg-black/35 z-30"></div>
+        <div id="previewPanel" class="preview-drawer hidden fixed inset-y-0 right-0 z-40 w-[420px] max-w-full border-l border-gray-200 bg-white flex flex-col">
             <div id="resizeHandle" class="resize-handle"></div>
             <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between shrink-0">
                 <h3 id="previewTitle" class="text-sm font-semibold text-gray-900 truncate"></h3>

@@ -12,7 +12,9 @@
     const loadingState     = $("loadingState");
     const statusLine       = $("statusLine");
     const statInfo         = $("statInfo");
+    const previewBackdrop  = $("previewBackdrop");
     const previewPanel     = $("previewPanel");
+    const resizeHandle     = $("resizeHandle");
     const previewTitle     = $("previewTitle");
     const previewBody      = $("previewBody");
     const previewMeta      = $("previewMeta");
@@ -43,6 +45,13 @@
     const confirmCancelBtn = $("confirmCancelBtn");
 
     const state = { entries: [], currentPath: "", selectedFiles: [], previewEntry: null };
+    const PREVIEW_DEFAULT_RATIO = 1 / 3;
+    const PREVIEW_MIN_WIDTH = 320;
+    const PREVIEW_MAX_RATIO = 0.8;
+    const PREVIEW_MOBILE_BREAKPOINT = 640;
+    let previewHideTimer = null;
+    let previewWidth = null;
+    let resizingPreview = false;
 
     /* ───── 工具函数 ───── */
     const formatBytes = (v) => {
@@ -66,6 +75,22 @@
 
     const getToken = () => tokenInput.value.trim();
     const setStatus = (msg) => { statusLine.textContent = msg; };
+    const isMobileViewport = () => window.innerWidth <= PREVIEW_MOBILE_BREAKPOINT;
+    const clampPreviewWidth = (width) => {
+        const maxWidth = Math.floor(window.innerWidth * PREVIEW_MAX_RATIO);
+        return Math.max(PREVIEW_MIN_WIDTH, Math.min(Math.floor(width), maxWidth));
+    };
+    const applyPreviewWidth = () => {
+        if (isMobileViewport()) {
+            previewPanel.style.removeProperty("width");
+            return;
+        }
+        const width = previewWidth === null
+            ? clampPreviewWidth(window.innerWidth * PREVIEW_DEFAULT_RATIO)
+            : clampPreviewWidth(previewWidth);
+        previewWidth = width;
+        previewPanel.style.width = `${width}px`;
+    };
 
     const showToast = (message, { type = "success", duration = 2200 } = {}) => {
         const TOAST_META = {
@@ -404,8 +429,17 @@
     /* ───── 预览 ───── */
     const openPreview = (entry) => {
         state.previewEntry = entry;
+        applyPreviewWidth();
+        if (previewHideTimer) {
+            clearTimeout(previewHideTimer);
+            previewHideTimer = null;
+        }
+        previewBackdrop.classList.remove("hidden");
         previewPanel.classList.remove("hidden");
-        previewPanel.classList.add("preview-enter");
+        requestAnimationFrame(() => {
+            previewBackdrop.classList.add("preview-backdrop-show");
+            previewPanel.classList.add("preview-drawer-open");
+        });
         previewTitle.textContent = entry.name;
 
         const ext = getExt(entry.name);
@@ -515,33 +549,42 @@
 
     const closePreview = () => {
         state.previewEntry = null;
-        previewPanel.classList.add("hidden");
+        previewBackdrop.classList.remove("preview-backdrop-show");
+        previewPanel.classList.remove("preview-drawer-open");
+        if (previewHideTimer) clearTimeout(previewHideTimer);
+        previewHideTimer = setTimeout(() => {
+            if (!state.previewEntry) {
+                previewBackdrop.classList.add("hidden");
+                previewPanel.classList.add("hidden");
+            }
+        }, 240);
     };
 
     closePreviewBtn.addEventListener("click", () => { closePreview(); renderRows(); });
-
-    /* ───── 预览面板拖拽调整宽度 ───── */
-    const resizeHandle = $("resizeHandle");
-    let resizing = false;
+    previewBackdrop.addEventListener("click", () => { closePreview(); renderRows(); });
     resizeHandle.addEventListener("mousedown", (e) => {
+        if (isMobileViewport()) return;
         e.preventDefault();
-        resizing = true;
+        resizingPreview = true;
         resizeHandle.classList.add("active");
         document.body.style.cursor = "col-resize";
         document.body.style.userSelect = "none";
     });
     document.addEventListener("mousemove", (e) => {
-        if (!resizing) return;
-        const newWidth = window.innerWidth - e.clientX;
-        const clamped = Math.max(280, Math.min(newWidth, window.innerWidth * 0.6));
-        previewPanel.style.width = clamped + "px";
+        if (!resizingPreview) return;
+        const nextWidth = clampPreviewWidth(window.innerWidth - e.clientX);
+        previewWidth = nextWidth;
+        previewPanel.style.width = `${nextWidth}px`;
     });
     document.addEventListener("mouseup", () => {
-        if (!resizing) return;
-        resizing = false;
+        if (!resizingPreview) return;
+        resizingPreview = false;
         resizeHandle.classList.remove("active");
         document.body.style.cursor = "";
         document.body.style.userSelect = "";
+    });
+    window.addEventListener("resize", () => {
+        applyPreviewWidth();
     });
 
     /* ───── 新建目录 ───── */
@@ -674,6 +717,11 @@
     /* ───── 键盘快捷键 ───── */
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
+            if (state.previewEntry) {
+                closePreview();
+                renderRows();
+                return;
+            }
             document.querySelectorAll(".fixed:not(.hidden)").forEach((m) => m.classList.add("hidden"));
         }
     });
