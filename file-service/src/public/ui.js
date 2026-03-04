@@ -683,6 +683,8 @@
         state.selectedFiles = [];
         renderFileQueue();
         uploadProgress.classList.add("hidden");
+        uploadDragDepth = 0;
+        dropzone.classList.remove("drop-active");
         openModal(uploadModal);
     });
 
@@ -719,12 +721,29 @@
         renderFileQueue();
     };
 
+    let uploadDragDepth = 0;
+
     dropzone.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", () => { if (fileInput.files.length) addFiles(fileInput.files); fileInput.value = ""; });
-    dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("drop-active"); });
-    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("drop-active"));
-    dropzone.addEventListener("drop", (e) => {
+    uploadModal.addEventListener("dragenter", (e) => {
         e.preventDefault();
+        uploadDragDepth += 1;
+        dropzone.classList.add("drop-active");
+    });
+    uploadModal.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("drop-active");
+    });
+    uploadModal.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        uploadDragDepth = Math.max(0, uploadDragDepth - 1);
+        if (uploadDragDepth === 0) {
+            dropzone.classList.remove("drop-active");
+        }
+    });
+    uploadModal.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadDragDepth = 0;
         dropzone.classList.remove("drop-active");
         if (e.dataTransfer?.files.length) addFiles(e.dataTransfer.files);
     });
@@ -774,7 +793,24 @@
         state.selectedFiles = [];
         renderFileQueue();
         uploadProgress.classList.add("hidden");
+        uploadDragDepth = 0;
+        dropzone.classList.remove("drop-active");
         openModal(uploadModal);
+    });
+    document.body.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const files = e.dataTransfer?.files;
+        if (!files?.length) return;
+        if (uploadModal.classList.contains("hidden")) {
+            uploadPathLabel.textContent = "/" + state.currentPath;
+            state.selectedFiles = [];
+            renderFileQueue();
+            uploadProgress.classList.add("hidden");
+            openModal(uploadModal);
+        }
+        uploadDragDepth = 0;
+        dropzone.classList.remove("drop-active");
+        addFiles(files);
     });
 
     /* ───── 键盘快捷键 ───── */
