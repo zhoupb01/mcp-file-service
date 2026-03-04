@@ -11,16 +11,16 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: "#fef2f2",
-                            100: "#fee2e2",
-                            200: "#fecaca",
-                            300: "#f9a8a8",
-                            400: "#ee6b6b",
-                            500: "#dd3131",
-                            600: "#c42828",
-                            700: "#a52222",
-                            800: "#881f1f",
-                            900: "#711f1f",
+                            50:  "#faf5ff",
+                            100: "#f3e8ff",
+                            200: "#e9d5ff",
+                            300: "#d8b4fe",
+                            400: "#c084fc",
+                            500: "#a855f7",
+                            600: "#9333ea",
+                            700: "#7e22ce",
+                            800: "#6b21a8",
+                            900: "#581c87",
                         },
                     },
                     fontFamily: {
@@ -36,7 +36,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/public/ui.css" />
 </head>
-<body class="h-screen bg-gray-50 text-gray-900 font-sans">
+<body class="h-screen bg-white text-gray-900 font-sans">
     <!-- 顶栏 -->
     <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20 relative">
         <div class="flex items-center gap-3">
@@ -85,7 +85,7 @@
 
             <!-- 文件表格 -->
             <div class="flex-1 overflow-y-auto scrollbar-thin" id="fileListContainer">
-                <div class="sticky top-0 bg-gray-50 border-b border-gray-200 grid grid-cols-[1fr_100px_100px_160px] gap-2 px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider z-10">
+                <div class="sticky top-0 bg-gray-50/60 border-b border-gray-200 grid grid-cols-[1fr_100px_100px_160px] gap-2 px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider z-10">
                     <span>名称</span>
                     <span>类型</span>
                     <span>大小</span>

@@ -267,9 +267,9 @@
 
         sorted.forEach((entry) => {
             const row = document.createElement("div");
-            row.className = "file-row grid grid-cols-[1fr_100px_100px_160px] gap-2 px-4 py-2 text-sm items-center hover:bg-gray-50 cursor-pointer transition-colors";
+            row.className = "file-row grid grid-cols-[1fr_100px_100px_160px] gap-2 px-4 py-2 text-sm items-center hover:bg-gray-100 cursor-pointer transition-colors";
             if (state.previewEntry && state.previewEntry.name === entry.name && state.previewEntry.type === entry.type) {
-                row.classList.add("bg-brand-50");
+                row.classList.add("bg-brand-50", "hover:bg-brand-100");
             }
 
             row.innerHTML = `
@@ -591,7 +591,7 @@
         uploadBtn.disabled = false;
         state.selectedFiles.forEach((f, i) => {
             const row = document.createElement("div");
-            row.className = "flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-sm";
+            row.className = "flex items-center gap-2 px-3 py-2 bg-gray-50/80 rounded-lg text-sm";
             row.innerHTML = `
                 <span class="shrink-0">${fileIcon({ name: f.name, type: "file" })}</span>
                 <span class="truncate flex-1">${f.name}</span>

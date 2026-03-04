@@ -12,9 +12,9 @@ body { overflow: hidden; }
 @keyframes slideUp { from { opacity: 0; transform: scale(0.97) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 .preview-enter { animation: previewIn 0.2s ease-out; }
 @keyframes previewIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-.drop-active { border-color: #dd3131 !important; background: #fef2f2 !important; }
+.drop-active { border-color: #a855f7 !important; background: #faf5ff !important; }
 .resize-handle { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; cursor: col-resize; z-index: 10; }
-.resize-handle:hover, .resize-handle.active { background: #dd3131; }
+.resize-handle:hover, .resize-handle.active { background: #a855f7; }
 
 .toast-host {
     position: fixed;
